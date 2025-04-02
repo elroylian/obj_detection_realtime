@@ -14,26 +14,30 @@ import numpy as np
 import io
 from PIL import Image
 import base64
+import torch
 
 try:
-    from demo.object_detection.inference import YOLOv10
+    from yoloe_text_module import create_model_with_text_prompt, predict_with_model
 except (ImportError, ModuleNotFoundError):
-    from inference import YOLOv10
+    print("module not found, please install the required modules")
+    
 
 
 cur_dir = Path(__file__).parent
 
 
 
-model = YOLOv10("model.onnx")
+model = create_model_with_text_prompt(["person"])
 
+# def detection(image, conf_threshold=0.3):
+#     image = cv2.resize(image, (model.input_width, model.input_height))
+#     print("conf_threshold", conf_threshold)
+#     new_image = model.detect_objects(image, conf_threshold)
+#     return cv2.resize(new_image, (500, 500))
 
-def detection(image, conf_threshold=0.3):
-    image = cv2.resize(image, (model.input_width, model.input_height))
-    print("conf_threshold", conf_threshold)
-    new_image = model.detect_objects(image, conf_threshold)
-    return cv2.resize(new_image, (500, 500))
-
+def detection(image_np, conf_threshold=0.3):
+    res_image = predict_with_model(model, image_np, ["person"])
+    return cv2.resize(res_image, (500, 500))
 
 stream = Stream(
     handler=detection,
